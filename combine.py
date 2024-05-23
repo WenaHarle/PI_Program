@@ -4,7 +4,7 @@ import math
 import xgboost as xgb
 import pandas as pd
 from datetime import datetime
-from segmentation3 import segment
+from segmentation import segment
 import random
 
 # Define the URL and the parameters
