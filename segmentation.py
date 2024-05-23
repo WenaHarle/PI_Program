@@ -1,31 +1,24 @@
 import cv2
 import numpy as np
-import os
 
 def segment(frame):
+    # Convert the frame to HSV color space
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
-    # Definisikan rentang warna biru muda (73AFEE)
-    lower_light_blue_1 = np.array([0, 0, 200])
-    upper_light_blue_1 = np.array([300, 255, 255])
+    # Define the HSV range for green color (tuned for green apples and guavas)
+    lower_green = np.array([30, 40, 40])
+    upper_green = np.array([100, 255, 255])
 
-    # Buat mask untuk warna biru muda (73AFEE)
-    mask_light_blue_1 = cv2.inRange(hsv, lower_light_blue_1, upper_light_blue_1)
+    # Create a mask for the green color
+    mask_green = cv2.inRange(hsv, lower_green, upper_green)
 
-    # Definisikan rentang warna biru muda (6294C3)
-    lower_light_blue_2 = np.array([100, 100, 100])
-    upper_light_blue_2 = np.array([120, 255, 255])
-
-    # Buat mask untuk warna biru muda (6294C3)
-    mask_light_blue_2 = cv2.inRange(hsv, lower_light_blue_2, upper_light_blue_2)
-
-    # Gabungkan mask untuk warna biru muda (73AFEE) dan (6294C3)
-    final_mask_light_blue = cv2.bitwise_or(mask_light_blue_1, mask_light_blue_2)
-
-    # Inversi mask untuk mendapatkan area non-putih, non-biru muda
-    mask_inverse = cv2.bitwise_not(final_mask_light_blue)
-
-    # Gabungkan frame asli dengan mask_inverse untuk mendapatkan area buah
-    result = cv2.bitwise_and(frame, frame, mask=mask_inverse)
+    # Apply the mask to the original frame to get the green areas
+    result = cv2.bitwise_and(frame, frame, mask=mask_green)
     return result
 
+# Example usage:
+# frame = cv2.imread('path_to_image.jpg')
+# result = segment(frame)
+# cv2.imshow('Segmented Green', result)
+# cv2.waitKey(0)
+# cv2.destroyAllWindows()
