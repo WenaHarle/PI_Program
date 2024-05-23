@@ -4,28 +4,25 @@ import math
 import xgboost as xgb
 import pandas as pd
 from datetime import datetime
-from segmentation import segment
+from segmentation3 import segment
 import random
 
 # Define the URL and the parameters
 import requests
-
-url = 'http://175.45.186.55/cbr/upload2.php'
-
-
-
-# Get the current time
 
 
 model = xgb.Booster()
 model.load_model("xgboost_model2.model")
 
 # Baca video
-video_top = 'Hasil 2/Camera_B_10.mp4'
-cap = cv2.VideoCapture(video_top)
+video_top = 'output1WRAP.mp4'
+cap = cv2.VideoCapture(4)
 
-video_side = 'Hasil 2/Camera_A_10.mp4'
-cap2 = cv2.VideoCapture(video_side)
+video_side = 'output2WRAP.mp4'
+cap2 = cv2.VideoCapture(2)
+url = 'http://175.45.186.55/cbr/upload2.php'
+
+
 
 count = 0
 midold = []
@@ -35,18 +32,27 @@ track_id = 0
 t = 0
 buah = 0
 
+
+width = 1920  # Desired width
+height = 1080  # Desired height
+
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+
+cap2.set(cv2.CAP_PROP_FRAME_WIDTH, width)
+cap2.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
 while cap.isOpened():
     count += 1
     ret, frame = cap.read()
     _, frame2 = cap2.read()
-    frame2 = frame2[200:840, 640:1280]
+    frame2 = frame2[200:800, 600:1200]
     if not ret:
         break
     # Ubah ruang warna BGR ke HSVC
     result = segment(frame)
     result2 = segment(frame2)
 
-    #cv2.line(frame, (0, 540), (1920, 540), (60, 35, 176), 10)
+    cv2.line(frame, (0, 540), (1920, 540), (60, 35, 176), 10)
 
     midnow = []
 
@@ -65,15 +71,15 @@ while cap.isOpened():
         if area2 > 15000:
             x2, y2, w2, h2 = cv2.boundingRect(cnt2)
             cv2.rectangle(frame2, (x2, y2), (x2 + w2, y2 + h2), (0, 0, 225), 3)
-            #cv2.putText(frame2, str(h2), (x2, y2 + h2), cv2.FONT_HERSHEY_PLAIN, 5, (0, 255, 0), 5)
+            cv2.putText(frame2, str(h2), (x2, y2 + h2), cv2.FONT_HERSHEY_PLAIN, 5, (0, 255, 0), 5)
             t = h2
 
     for cnt in contours:
             # Calculate area and remove small elements
         area = cv2.contourArea(cnt)
-        if area > 100000 and area < 380000:
+        if area > 15000 and area < 380000:
             x, y, w, h = cv2.boundingRect(cnt)
-            #cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 225), 3)
+            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 225), 3)
             #cv2.putText(frame, str(w * h), (x, y + h), cv2.FONT_HERSHEY_PLAIN, 5, (0, 255, 0), 5)
             cx = int((x + x + w) / 2)
             cy = int((y + y + h) / 2)
@@ -92,7 +98,6 @@ while cap.isOpened():
             cv2.putText(frame, str(grade), (x, y + h), cv2.FONT_HERSHEY_PLAIN, 10, (0, 255, 0), 10)
 
             midnow.append((cx, cy, w, h, t, grade, berat))
-
 
 
     if count <= 2:
@@ -133,7 +138,8 @@ while cap.isOpened():
         if (object_id not in cid and 510 < pt[1] and pt[1] < 530):
             buah =+1
             cid.append(object_id)
-
+            data = [pt[2], pt[3], pt[4], pt[5]]
+            print(data)
             image = frame[pt[1]-320:pt[1]+320, pt[0]-320:pt[0]+320]
             cv2.imwrite("imageTop.jpg", image)
             cv2.imwrite("imageSide.jpg", frame2)
@@ -172,7 +178,7 @@ while cap.isOpened():
 
 
     midold = midnow.copy()
-
+    cv2.imshow("segment", gray)
     cv2.imshow("Result", frame)
     cv2.imshow("Result2", frame2)
 
